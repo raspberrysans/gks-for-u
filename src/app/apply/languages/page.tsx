@@ -1,6 +1,7 @@
 "use client";
 
 import { Field, WizardShell, inputCls } from "@/components/wizard/WizardShell";
+import { DatePicker } from "@/components/wizard/DatePicker";
 import { patchSection, useDraft } from "@/lib/wizard/store";
 import { englishBonusPoints, topikBonusPoints } from "@/lib/scoring/rubric";
 
@@ -30,7 +31,12 @@ export default function LanguagesPage() {
  </select>
  </Field>
  <Field label="TOPIK test date (optional)">
- <input type="date" className={inputCls} value={languages.topikDate ?? ""} onChange={(e) => set("topikDate", e.target.value)} />
+ <DatePicker
+ ariaLabel="topik test date"
+ value={languages.topikDate}
+ onChange={(v) => set("topikDate", v)}
+ max={new Date().toISOString().slice(0, 10)}
+ />
  </Field>
 
  <Field label="English test">

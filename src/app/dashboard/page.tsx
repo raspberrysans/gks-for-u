@@ -9,6 +9,7 @@ import { computeCompetitiveness } from "@/lib/scoring/competitiveness";
 import type { ApplicantProfile } from "@/lib/eligibility/types";
 import type { ScoringInput } from "@/lib/scoring/types";
 import AppShell from "@/components/AppShell";
+import { formatYMDHM } from "@/lib/format/date";
 
 export default function DashboardPage() {
   const draft = useDraft();
@@ -48,7 +49,7 @@ export default function DashboardPage() {
   const comp = computeCompetitiveness(scoring, rubric);
 
   const name = [draft.profile.givenName, draft.profile.familyName].filter(Boolean).join(" ");
-  const lastSaved = new Date(draft.updatedAt).toLocaleString();
+  const lastSaved = formatYMDHM(draft.updatedAt);
 
   return (
     <AppShell>

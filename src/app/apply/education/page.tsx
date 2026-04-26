@@ -1,6 +1,7 @@
 "use client";
 
 import { Field, WizardShell, inputCls } from "@/components/wizard/WizardShell";
+import { DatePicker } from "@/components/wizard/DatePicker";
 import { patchSection, useDraft } from "@/lib/wizard/store";
 import { meetsGpaThreshold } from "@/lib/eligibility/engine";
 import type { GpaScale } from "@/lib/eligibility/types";
@@ -23,13 +24,25 @@ export default function EducationPage() {
  <input className={inputCls} value={education.highSchoolCity ?? ""} onChange={(e) => set("highSchoolCity", e.target.value)} />
  </Field>
  <Field label="Attendance start">
- <input type="date" className={inputCls} value={education.highSchoolStart ?? ""} onChange={(e) => set("highSchoolStart", e.target.value)} />
+ <DatePicker
+ ariaLabel="attendance start"
+ value={education.highSchoolStart}
+ onChange={(v) => set("highSchoolStart", v)}
+ />
  </Field>
  <Field label="Attendance end">
- <input type="date" className={inputCls} value={education.highSchoolEnd ?? ""} onChange={(e) => set("highSchoolEnd", e.target.value)} />
+ <DatePicker
+ ariaLabel="attendance end"
+ value={education.highSchoolEnd}
+ onChange={(v) => set("highSchoolEnd", v)}
+ />
  </Field>
  <Field label="Expected graduation date" hint="Must be on or before 2025-12-31 for the 2026 intake.">
- <input type="date" className={inputCls} value={education.expectedGraduationDate ?? ""} onChange={(e) => set("expectedGraduationDate", e.target.value)} />
+ <DatePicker
+ ariaLabel="expected graduation date"
+ value={education.expectedGraduationDate}
+ onChange={(v) => set("expectedGraduationDate", v)}
+ />
  </Field>
  <Field label="GPA scale">
  <select className={inputCls} value={education.gpaScale ?? ""} onChange={(e) => set("gpaScale", e.target.value as GpaScale)}>

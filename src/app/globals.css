@@ -262,12 +262,188 @@ body {
   border-color: var(--ink);
 }
 
+/* date picker */
+.dp-wrap {
+  position: relative;
+  width: 100%;
+}
+.dp-input-row {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+.dp-input {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  padding-right: 2.6rem;
+}
+.dp-trigger {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--line-strong);
+  cursor: pointer;
+  transition: color 180ms ease, background 180ms ease;
+}
+.dp-trigger:hover {
+  color: var(--ink);
+  background: var(--bg-soft);
+}
+.dp-pop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 17.5rem;
+  padding: 0.85rem;
+  background: var(--bg-card);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow);
+  animation: dp-rise 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes dp-rise {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.dp-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.dp-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex: 1;
+  justify-content: center;
+}
+.dp-month {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: lowercase;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.dp-year {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.dp-nav {
+  width: 1.75rem;
+  height: 1.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--ink-soft);
+  border: 1px solid transparent;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+}
+.dp-nav:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: var(--bg-soft);
+}
+.dp-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.dp-weekday {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: var(--muted);
+  padding: 0.25rem 0;
+}
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.dp-day {
+  aspect-ratio: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.dp-day:hover:not(:disabled) {
+  background: var(--bg-soft);
+  border-color: var(--line-strong);
+}
+.dp-day-muted {
+  color: var(--muted);
+  opacity: 0.45;
+}
+.dp-day-today {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.dp-day-selected,
+.dp-day-selected:hover {
+  background: var(--accent);
+  color: #0a0a0a;
+  border-color: var(--accent);
+  transform: scale(1.02);
+}
+.dp-day:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+.dp-foot {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+}
+.dp-link {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  padding: 0.25rem 0.4rem;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+.dp-link:hover {
+  color: var(--accent-text);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rise,
   .drift,
   .marquee,
   .reveal,
-  .caret::after {
+  .caret::after,
+  .dp-pop {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;

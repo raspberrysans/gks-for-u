@@ -2,6 +2,7 @@
 
 import countries from "../../../../data/countries.json";
 import { Field, WizardShell, inputCls } from "@/components/wizard/WizardShell";
+import { DatePicker } from "@/components/wizard/DatePicker";
 import { patchSection, useDraft } from "@/lib/wizard/store";
 
 export default function ProfilePage() {
@@ -21,7 +22,12 @@ export default function ProfilePage() {
  <input className={inputCls} value={profile.middleName ?? ""} onChange={(e) => set("middleName", e.target.value)} />
  </Field>
  <Field label="Date of birth" hint="YYYY-MM-DD. Must be born after 2001-03-01.">
- <input type="date" className={inputCls} value={profile.dateOfBirth ?? ""} onChange={(e) => set("dateOfBirth", e.target.value)} />
+ <DatePicker
+ ariaLabel="date of birth"
+ value={profile.dateOfBirth}
+ onChange={(v) => set("dateOfBirth", v)}
+ max={new Date().toISOString().slice(0, 10)}
+ />
  </Field>
  <Field label="Gender">
  <select className={inputCls} value={profile.gender ?? ""} onChange={(e) => set("gender", e.target.value)}>
