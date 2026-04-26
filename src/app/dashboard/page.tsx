@@ -8,6 +8,7 @@ import { computeRubric } from "@/lib/scoring/rubric";
 import { computeCompetitiveness } from "@/lib/scoring/competitiveness";
 import type { ApplicantProfile } from "@/lib/eligibility/types";
 import type { ScoringInput } from "@/lib/scoring/types";
+import AppShell from "@/components/AppShell";
 
 export default function DashboardPage() {
   const draft = useDraft();
@@ -50,137 +51,160 @@ export default function DashboardPage() {
   const lastSaved = new Date(draft.updatedAt).toLocaleString();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-10">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Dashboard</p>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {name ? `${name}'s GKS 2026 application` : "Your GKS 2026 application"}
-          </h1>
-          <p className="mt-1 text-xs text-zinc-500">Last saved {lastSaved} · Stored in your browser only.</p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/apply"
-            className="inline-flex h-10 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700"
-          >
-            Continue editing →
-          </Link>
-          <button
-            type="button"
-            onClick={() => {
-              if (confirm("Delete this draft? This cannot be undone.")) resetDraft();
-            }}
-            className="inline-flex h-10 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
-          >
-            Reset
-          </button>
-        </div>
-      </header>
+    <AppShell>
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="kicker text-[color:var(--accent-text)]">dashboard</p>
+            <h1 className="display mt-3 text-4xl sm:text-5xl">
+              {name ? `${name.toLowerCase()}'s gks 2026 application` : "your gks 2026 application"}
+            </h1>
+            <p className="mt-2 text-xs lowercase text-[color:var(--muted)]">
+              last saved {lastSaved}. stored in your browser only.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/apply" className="btn btn-primary">
+              continue editing
+              <span className="ml-2">→</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                if (confirm("delete this draft? this cannot be undone.")) resetDraft();
+              }}
+              className="btn btn-ghost"
+            >
+              reset
+            </button>
+          </div>
+        </header>
 
-      <section className="mb-8 rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800">
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-medium">Overall progress</span>
-          <span className="font-mono text-xs text-zinc-500">{overallPercent}%</span>
-        </div>
-        <div className="h-2 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
-          <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${overallPercent}%` }} />
-        </div>
-      </section>
+        <section className="mb-10 border border-[color:var(--line-strong)] bg-[color:var(--bg-card)] p-6">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="kicker text-[color:var(--muted)]">overall progress</span>
+            <span className="font-mono text-xs text-[color:var(--ink)]">{overallPercent}%</span>
+          </div>
+          <div className="h-1.5 w-full bg-[color:var(--line)]">
+            <div
+              className="h-full bg-[color:var(--accent)] transition-all"
+              style={{ width: `${overallPercent}%` }}
+            />
+          </div>
+        </section>
 
-      <section className="mb-8 grid gap-4 sm:grid-cols-3">
-        <Stat
-          label="Eligibility"
-          value={eligibility.blockers.length === 0 ? "Eligible" : `${eligibility.blockers.length} issue(s)`}
-          tone={eligibility.blockers.length === 0 ? "good" : "warn"}
-          hint={eligibility.eligibleTracks.length > 0 ? `${eligibility.eligibleTracks.length} tracks open` : "—"}
-        />
-        <Stat
-          label="Rubric score"
-          value={`${rubric.total} / ${rubric.max}`}
-          tone={rubric.total / rubric.max >= 0.7 ? "good" : "neutral"}
-          hint={`${Math.round((rubric.total / rubric.max) * 100)}% of max`}
-        />
-        <Stat
-          label="Competitiveness"
-          value={comp.tier}
-          tone={comp.tier === "Strong" || comp.tier === "Very Strong" ? "good" : "neutral"}
-          hint="Heuristic estimate"
-        />
-      </section>
+        <section className="mb-10 grid gap-px overflow-hidden border border-[color:var(--line-strong)] bg-[color:var(--line-strong)] sm:grid-cols-3">
+          <Stat
+            label="eligibility"
+            value={eligibility.blockers.length === 0 ? "eligible" : `${eligibility.blockers.length} issue(s)`}
+            tone={eligibility.blockers.length === 0 ? "good" : "warn"}
+            hint={eligibility.eligibleTracks.length > 0 ? `${eligibility.eligibleTracks.length} tracks open` : "no tracks open"}
+          />
+          <Stat
+            label="rubric score"
+            value={`${rubric.total} / ${rubric.max}`}
+            tone={rubric.total / rubric.max >= 0.7 ? "good" : "neutral"}
+            hint={`${Math.round((rubric.total / rubric.max) * 100)}% of max`}
+          />
+          <Stat
+            label="competitiveness"
+            value={comp.tier.toLowerCase()}
+            tone={comp.tier === "Strong" || comp.tier === "Very Strong" ? "good" : "neutral"}
+            hint="heuristic estimate"
+          />
+        </section>
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">Sections</h2>
-        <ul className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-          {sections.map((s) => (
-            <li key={s.id}>
-              <Link
-                href={s.href}
-                className="flex items-center justify-between gap-4 px-5 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-900"
-              >
-                <div className="flex items-center gap-3">
-                  <StatusDot status={s.status} />
-                  <span className="font-medium">{s.label}</span>
-                </div>
-                <div className="flex items-center gap-3 text-xs text-zinc-500">
-                  <span>{s.detail}</span>
-                  <span>→</span>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {comp.suggestions.length > 0 && (
-        <section className="mb-8 rounded-2xl border border-blue-200 bg-blue-50 p-5 dark:border-blue-800 dark:bg-blue-950">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-700">Top suggestions</h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm">
-            {comp.suggestions.slice(0, 3).map((s, i) => <li key={i}>{s}</li>)}
+        <section className="mb-10">
+          <h2 className="kicker mb-4 text-[color:var(--muted)]">sections</h2>
+          <ul className="divide-y divide-[color:var(--line)] border border-[color:var(--line-strong)] bg-[color:var(--bg-card)]">
+            {sections.map((s) => (
+              <li key={s.id}>
+                <Link
+                  href={s.href}
+                  className="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-[color:var(--bg-soft)]"
+                >
+                  <div className="flex items-center gap-3">
+                    <StatusDot status={s.status} />
+                    <span className="lowercase text-[color:var(--ink)]">{s.label.toLowerCase()}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs lowercase text-[color:var(--muted)]">
+                    <span>{s.detail}</span>
+                    <span>→</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
           </ul>
         </section>
-      )}
 
-      <section className="flex flex-wrap gap-3">
-        <Link
-          href="/apply/review"
-          className="inline-flex h-10 items-center justify-center rounded-full bg-zinc-900 px-5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
-        >
-          Review & export →
-        </Link>
-        <Link
-          href="/eligibility"
-          className="inline-flex h-10 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900"
-        >
-          Re-run eligibility check
-        </Link>
-      </section>
-    </main>
+        {comp.suggestions.length > 0 && (
+          <section
+            className="mb-10 border p-6"
+            style={{ borderColor: "var(--accent)", background: "var(--accent-soft)" }}
+          >
+            <h2 className="kicker text-[color:var(--accent-text)]">top suggestions</h2>
+            <ul className="mt-3 space-y-2 text-sm lowercase text-[color:var(--ink)]">
+              {comp.suggestions.slice(0, 3).map((s, i) => (
+                <li key={i} className="flex gap-2">
+                  <span className="text-[color:var(--accent-text)]">→</span>
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <section className="flex flex-wrap gap-3">
+          <Link href="/apply/review" className="btn btn-invert">
+            review and export
+            <span className="ml-2">→</span>
+          </Link>
+          <Link href="/eligibility" className="btn btn-ghost">
+            re-run eligibility check
+          </Link>
+        </section>
+      </main>
+    </AppShell>
   );
 }
 
-function Stat({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone: "good" | "warn" | "neutral" }) {
-  const toneCls =
+function Stat({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  tone: "good" | "warn" | "neutral";
+}) {
+  const bg =
     tone === "good"
-      ? "border-green-300 bg-green-50 dark:border-green-800 dark:bg-green-950"
+      ? "var(--good-soft)"
       : tone === "warn"
-      ? "border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950"
-      : "border-zinc-200 dark:border-zinc-800";
+      ? "var(--warn-soft)"
+      : "var(--bg-card)";
   return (
-    <div className={`rounded-2xl border p-5 ${toneCls}`}>
-      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
-      {hint && <p className="mt-0.5 text-xs text-zinc-500">{hint}</p>}
+    <div className="p-6" style={{ background: bg }}>
+      <p className="kicker text-[color:var(--muted)]">{label}</p>
+      <p className="display mt-3 text-3xl">{value}</p>
+      {hint && <p className="mt-1 text-xs lowercase text-[color:var(--muted)]">{hint}</p>}
     </div>
   );
 }
 
 function StatusDot({ status }: { status: "empty" | "partial" | "complete" }) {
-  const cls =
+  const bg =
     status === "complete"
-      ? "bg-green-500"
+      ? "var(--accent)"
       : status === "partial"
-      ? "bg-amber-500"
-      : "bg-zinc-300 dark:bg-zinc-700";
-  return <span className={`inline-block h-2.5 w-2.5 rounded-full ${cls}`} />;
+      ? "var(--warn)"
+      : "var(--line-strong)";
+  return (
+    <span
+      className="inline-block h-2.5 w-2.5 rounded-full"
+      style={{ background: bg }}
+    />
+  );
 }

@@ -20,55 +20,79 @@ export function WizardShell({
   const pct = Math.round(((idx + 1) / SECTIONS.length) * 100);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <div className="mb-2 flex items-center justify-between text-xs text-zinc-500">
-          <span>Step {idx + 1} of {SECTIONS.length}</span>
+        <div className="mb-2 flex items-center justify-between text-xs lowercase text-[color:var(--muted)]">
+          <span>
+            step {idx + 1} of {SECTIONS.length}
+          </span>
           <span>{pct}%</span>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-zinc-200 dark:bg-zinc-800">
-          <div className="h-full rounded-full bg-blue-600" style={{ width: `${pct}%` }} />
+        <div className="h-1 w-full bg-[color:var(--line)]">
+          <div
+            className="h-full bg-[color:var(--accent)] transition-all"
+            style={{ width: `${pct}%` }}
+          />
         </div>
       </div>
 
       <header>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {description && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>}
+        <h1 className="display text-4xl sm:text-5xl">{title.toLowerCase()}</h1>
+        {description && (
+          <p className="mt-3 text-sm lowercase text-[color:var(--muted)]">
+            {description}
+          </p>
+        )}
       </header>
 
       <div>{children}</div>
 
-      <nav className="flex justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
+      <nav className="flex justify-between border-t border-[color:var(--line)] pt-6">
         {prev ? (
-          <Link href={`/apply/${prev}`} className={btnSecondary}>
-            ← Back
-          </Link>
-        ) : <span />}
-        {next ? (
-          <Link href={`/apply/${next}`} className={btnPrimary}>
-            Continue →
+          <Link href={`/apply/${prev}`} className="btn btn-ghost">
+            <span className="mr-2">←</span> back
           </Link>
         ) : (
-          <Link href="/apply/review" className={btnPrimary}>Review →</Link>
+          <span />
+        )}
+        {next ? (
+          <Link href={`/apply/${next}`} className="btn btn-primary">
+            continue
+            <span className="ml-2">→</span>
+          </Link>
+        ) : (
+          <Link href="/apply/review" className="btn btn-primary">
+            review
+            <span className="ml-2">→</span>
+          </Link>
         )}
       </nav>
     </div>
   );
 }
 
-export const inputCls =
-  "w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900";
-export const btnPrimary =
-  "inline-flex h-10 items-center justify-center rounded-full bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700";
-export const btnSecondary =
-  "inline-flex h-10 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900";
+export const inputCls = "input";
+export const btnPrimary = "btn btn-primary";
+export const btnSecondary = "btn btn-ghost";
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+export function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium">{label}</span>
+      <span className="kicker mb-2 block text-[color:var(--muted)]">{label}</span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-zinc-500">{hint}</span>}
+      {hint && (
+        <span className="mt-2 block text-xs lowercase text-[color:var(--muted)]">
+          {hint}
+        </span>
+      )}
     </label>
   );
 }

@@ -1,26 +1,276 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* =========================================================
+   THEME TOKENS
+   default = dark (charli xcx, brat, helvetica, acid lime)
+   ========================================================= */
+
+:root,
+:root[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --bg-soft: #141414;
+  --bg-card: #161616;
+  --bg-invert: #fafafa;
+  --ink: #f4f4f4;
+  --ink-soft: #d4d4d4;
+  --ink-invert: #0a0a0a;
+  --muted: #8a8a8a;
+  --line: #1f1f1f;
+  --line-strong: #2e2e2e;
+  --accent: #c6ff3d;
+  --accent-deep: #aef000;
+  --accent-soft: rgba(198, 255, 61, 0.14);
+  --accent-text: #c6ff3d;
+  --warn: #ffb84d;
+  --warn-soft: rgba(255, 184, 77, 0.12);
+  --good: #c6ff3d;
+  --good-soft: rgba(198, 255, 61, 0.12);
+  --shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.7);
+  --grain-opacity: 0.35;
+}
+
+:root[data-theme="light"] {
+  --bg: #fafafa;
+  --bg-soft: #f1f1f1;
+  --bg-card: #ffffff;
+  --bg-invert: #0a0a0a;
+  --ink: #0a0a0a;
+  --ink-soft: #2a2a2a;
+  --ink-invert: #fafafa;
+  --muted: #6b6b6b;
+  --line: #e6e6e6;
+  --line-strong: #cfcfcf;
+  --accent: #c6ff3d;
+  --accent-deep: #9bd200;
+  --accent-soft: rgba(198, 255, 61, 0.35);
+  --accent-text: #4d6b00;
+  --warn: #b06a00;
+  --warn-soft: rgba(176, 106, 0, 0.1);
+  --good: #4d6b00;
+  --good-soft: rgba(198, 255, 61, 0.4);
+  --shadow: 0 30px 80px -40px rgba(10, 10, 10, 0.18);
+  --grain-opacity: 0.18;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-soft: var(--bg-soft);
+  --color-bg-card: var(--bg-card);
+  --color-bg-invert: var(--bg-invert);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-invert: var(--ink-invert);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-text: var(--accent-text);
+  --color-warn: var(--warn);
+  --color-good: var(--good);
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* lowercase brat display */
+.display {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  text-transform: lowercase;
+  line-height: 0.95;
+}
+
+.display-tight {
+  letter-spacing: -0.05em;
+}
+
+.kicker {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+}
+
+::selection {
+  background: var(--accent);
+  color: #0a0a0a;
+}
+
+/* very faint grain — gives the cream / black a hand pressed feel */
+.grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.06 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* reveal on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  opacity: 0;
+  animation: rise 1100ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+.drift {
+  animation: drift 9s ease-in-out infinite;
+}
+
+.link-draw {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 350ms ease;
+}
+.link-draw:hover {
+  background-size: 100% 1px;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+
+@keyframes caret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.45ch;
+  height: 0.85em;
+  margin-left: 0.1em;
+  background: var(--accent);
+  vertical-align: -0.05em;
+  animation: caret 1.05s steps(1) infinite;
+}
+
+/* form controls picked up site wide */
+.input {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-card);
+  color: var(--ink);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.875rem;
+  border-radius: 0;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-soft);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.75rem;
+  padding: 0 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, border-color 180ms ease;
+  text-transform: lowercase;
+  letter-spacing: 0;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #0a0a0a;
+}
+.btn-primary:hover {
+  background: var(--accent-deep);
+}
+.btn-invert {
+  background: var(--ink);
+  color: var(--bg);
+}
+.btn-invert:hover {
+  background: var(--accent);
+  color: #0a0a0a;
+}
+.btn-ghost {
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+}
+.btn-ghost:hover {
+  background: var(--bg-soft);
+  border-color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .drift,
+  .marquee,
+  .reveal,
+  .caret::after {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
