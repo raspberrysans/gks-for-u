@@ -1,0 +1,31 @@
+{
+  "topik": {
+    "description": "Per GKS-U Guideline: TOPIK level grants a percentage bonus on the language portion (10% of total score).",
+    "levels": [
+      { "level": 0, "label": "None", "bonusPercent": 0 },
+      { "level": 1, "label": "TOPIK 1", "bonusPercent": 60 },
+      { "level": 2, "label": "TOPIK 2", "bonusPercent": 70 },
+      { "level": 3, "label": "TOPIK 3", "bonusPercent": 80 },
+      { "level": 4, "label": "TOPIK 4", "bonusPercent": 90 },
+      { "level": 5, "label": "TOPIK 5", "bonusPercent": 100 },
+      { "level": 6, "label": "TOPIK 6", "bonusPercent": 100 }
+    ]
+  },
+  "english": {
+    "description": "TOEFL iBT / IELTS bands map to a percentage bonus on the English portion. Exempts Korean language program if applying in English-medium track.",
+    "toefl_ibt": [
+      { "min": 114, "bonusPercent": 100 },
+      { "min": 95, "bonusPercent": 90 },
+      { "min": 79, "bonusPercent": 80 },
+      { "min": 60, "bonusPercent": 70 },
+      { "min": 0, "bonusPercent": 0 }
+    ],
+    "ielts": [
+      { "min": 8.0, "bonusPercent": 100 },
+      { "min": 7.0, "bonusPercent": 90 },
+      { "min": 6.0, "bonusPercent": 80 },
+      { "min": 5.0, "bonusPercent": 70 },
+      { "min": 0, "bonusPercent": 0 }
+    ]
+  }
+}

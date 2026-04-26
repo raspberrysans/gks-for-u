@@ -1,0 +1,29 @@
+{
+  "cycle": 2026,
+  "ageCutoffBornAfter": "2001-03-01",
+  "graduationDeadline": "2025-12-31",
+  "gpaMinimums": {
+    "scale_4_0": 2.64,
+    "scale_4_3": 2.80,
+    "scale_4_5": 2.91,
+    "scale_5_0": 3.23,
+    "scale_100": 80,
+    "topPercentile": 20
+  },
+  "absoluteDisqualifiers": [
+    "holds_korean_citizenship",
+    "parent_holds_korean_citizenship",
+    "already_has_bachelors_degree",
+    "graduated_korean_high_school",
+    "prior_korean_government_degree_scholarship",
+    "withdrew_from_gks_within_3_years",
+    "criminal_record",
+    "infectious_disease",
+    "currently_enrolled_in_korean_university"
+  ],
+  "softWarnings": [
+    "gpa_close_to_threshold",
+    "no_topik_or_english_proof",
+    "low_country_quota"
+  ]
+}

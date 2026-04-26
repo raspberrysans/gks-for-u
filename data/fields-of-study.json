@@ -1,0 +1,12 @@
+{
+  "divisions": [
+    { "id": "humanities", "label": "Humanities", "stem": false, "examples": ["Korean Studies", "Linguistics", "History", "Philosophy"] },
+    { "id": "social-science", "label": "Social Science", "stem": false, "examples": ["Economics", "Political Science", "Business Administration", "International Relations"] },
+    { "id": "natural-science", "label": "Natural Science", "stem": true, "examples": ["Mathematics", "Physics", "Chemistry", "Biology"] },
+    { "id": "engineering", "label": "Engineering", "stem": true, "examples": ["Mechanical", "Electrical", "Civil", "Chemical", "Software"] },
+    { "id": "ai", "label": "AI / Computer Science", "stem": true, "examples": ["Artificial Intelligence", "Computer Science", "Data Science"] },
+    { "id": "medicine", "label": "Medicine & Pharmacy", "stem": true, "examples": ["Nursing", "Pharmacy", "Public Health"] },
+    { "id": "education", "label": "Education", "stem": false, "examples": ["Korean Language Education", "Early Childhood Education"] },
+    { "id": "arts-sports", "label": "Arts & Sports", "stem": false, "examples": ["Music", "Visual Arts", "Sports Science"] }
+  ]
+}

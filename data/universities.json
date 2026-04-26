@@ -1,0 +1,34 @@
+{
+  "note": "Subset of GKS-U participating universities. Type A = elite/Seoul-area; Type B = regional. Embassy Track applicants generally must include at least one Type B in their 3 choices. Update yearly from study.gks.go.kr.",
+  "typeA": [
+    { "id": "snu", "name": "Seoul National University", "city": "Seoul", "uic": false },
+    { "id": "yonsei", "name": "Yonsei University", "city": "Seoul", "uic": false },
+    { "id": "korea", "name": "Korea University", "city": "Seoul", "uic": false },
+    { "id": "kaist", "name": "KAIST", "city": "Daejeon", "uic": true, "uicDepartments": ["Computer Science", "Electrical Engineering", "Mechanical Engineering", "AI"] },
+    { "id": "postech", "name": "POSTECH", "city": "Pohang", "uic": true, "uicDepartments": ["Computer Science", "AI", "Mechanical Engineering"] },
+    { "id": "skku", "name": "Sungkyunkwan University", "city": "Seoul", "uic": false },
+    { "id": "hanyang", "name": "Hanyang University", "city": "Seoul", "uic": true, "uicDepartments": ["Software Engineering", "Mechanical Engineering"] },
+    { "id": "ewha", "name": "Ewha Womans University", "city": "Seoul", "uic": false },
+    { "id": "kyunghee", "name": "Kyung Hee University", "city": "Seoul", "uic": false },
+    { "id": "cau", "name": "Chung-Ang University", "city": "Seoul", "uic": false },
+    { "id": "konkuk", "name": "Konkuk University", "city": "Seoul", "uic": false },
+    { "id": "sogang", "name": "Sogang University", "city": "Seoul", "uic": false },
+    { "id": "unist", "name": "UNIST", "city": "Ulsan", "uic": true, "uicDepartments": ["Computer Science", "AI", "Energy Engineering"] }
+  ],
+  "typeB": [
+    { "id": "pnu", "name": "Pusan National University", "city": "Busan", "rGksRegion": "all" },
+    { "id": "knu", "name": "Kyungpook National University", "city": "Daegu", "rGksRegion": "all" },
+    { "id": "cnu", "name": "Chungnam National University", "city": "Daejeon", "rGksRegion": "all" },
+    { "id": "jbnu", "name": "Jeonbuk National University", "city": "Jeonju", "rGksRegion": "all" },
+    { "id": "jnu", "name": "Chonnam National University", "city": "Gwangju", "rGksRegion": "all" },
+    { "id": "kangwon", "name": "Kangwon National University", "city": "Chuncheon", "rGksRegion": "all" },
+    { "id": "cbnu", "name": "Chungbuk National University", "city": "Cheongju", "rGksRegion": "all" },
+    { "id": "gnu", "name": "Gyeongsang National University", "city": "Jinju", "rGksRegion": "all" },
+    { "id": "jeju", "name": "Jeju National University", "city": "Jeju", "rGksRegion": "all" },
+    { "id": "incheon", "name": "Incheon National University", "city": "Incheon", "rGksRegion": "all" },
+    { "id": "dongguk", "name": "Dongguk University WISE", "city": "Gyeongju", "rGksRegion": "all" },
+    { "id": "handong", "name": "Handong Global University", "city": "Pohang", "rGksRegion": "all" },
+    { "id": "keimyung", "name": "Keimyung University", "city": "Daegu", "rGksRegion": "all" },
+    { "id": "wonkwang", "name": "Wonkwang University", "city": "Iksan", "rGksRegion": "all" }
+  ]
+}

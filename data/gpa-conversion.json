@@ -1,0 +1,14 @@
+{
+  "note": "Approximate conversion table per GKS-U Guideline Appendix A. Use convertToFourPoint() in lib/scoring.",
+  "scales": {
+    "4.0": { "min": 0, "max": 4.0, "passingMin": 2.64 },
+    "4.3": { "min": 0, "max": 4.3, "passingMin": 2.80 },
+    "4.5": { "min": 0, "max": 4.5, "passingMin": 2.91 },
+    "5.0": { "min": 0, "max": 5.0, "passingMin": 3.23 },
+    "100": { "min": 0, "max": 100, "passingMin": 80 }
+  },
+  "toPercentile": {
+    "description": "Map a GPA on its native scale to an approximate percentile (0-100). Linear within the passing range; below passingMin returns ineligible.",
+    "method": "linear-interpolation"
+  }
+}
