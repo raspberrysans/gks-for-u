@@ -63,7 +63,7 @@ export default function ReviewPage() {
     downloadBlob(bytes, "application/pdf", "gks-2026-application.pdf");
   }
   async function exportDocx() {
-    const { generateApplicationDocx } = await import("@/lib/export/docx");
+    const { generateApplicationDocx } = await import("@/lib/export/officialDocx");
     const bytes = await generateApplicationDocx(draft);
     downloadBlob(
       bytes,
