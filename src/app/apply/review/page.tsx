@@ -60,11 +60,13 @@ export default function ReviewPage() {
 
  const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
- async function exportPdf() {
- const { generateApplicationPdf } = await import("@/lib/export/pdf");
- const bytes = await generateApplicationPdf(draft);
- downloadBlob(bytes, "application/pdf", "gks-2026-application.pdf");
- }
+ // PDF export disabled for now — Helvetica can't render Korean glyphs and the layout
+ // hasn't been reviewed against the official forms. Re-enable once a Unicode font is wired up.
+ // async function exportPdf() {
+ //   const { generateApplicationPdf } = await import("@/lib/export/pdf");
+ //   const bytes = await generateApplicationPdf(draft);
+ //   downloadBlob(bytes, "application/pdf", "gks-2026-application.pdf");
+ // }
  async function exportCombinedDocx() {
  const { generateApplicationDocx } = await import("@/lib/export/officialDocx");
  const bytes = await generateApplicationDocx(draft);
@@ -154,8 +156,8 @@ export default function ReviewPage() {
  ))}
  </ul>
  <div className="mt-4 flex flex-wrap gap-3">
- <button onClick={exportPdf} className={btnPrimary}>Download PDF (all forms)</button>
- <button onClick={exportCombinedDocx} className={btnSecondary}>Download DOCX (all forms)</button>
+ {/* <button onClick={exportPdf} className={btnPrimary}>Download PDF (all forms)</button> */}
+ <button onClick={exportCombinedDocx} className={btnPrimary}>Download DOCX (all forms)</button>
  </div>
  </section>
  </WizardShell>
