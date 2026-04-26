@@ -127,14 +127,14 @@ export function EssayEditor({
           </ul>
         </div>
 
-        <div className="relative">
+        <div className="relative rounded-2xl bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)] ring-1 ring-zinc-200/70 transition-shadow focus-within:shadow-[0_2px_4px_rgba(0,0,0,0.05),0_12px_32px_-12px_rgba(0,0,0,0.12)] focus-within:ring-zinc-300 dark:bg-zinc-950 dark:ring-zinc-800">
           <textarea
             ref={textareaRef}
-            className="block min-h-96 w-full resize-none rounded-xl border border-zinc-300 bg-white p-4 font-serif text-base leading-7 outline-none transition-colors placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-zinc-700 dark:bg-zinc-900"
+            className="block min-h-[28rem] w-full resize-none bg-transparent px-8 py-7 font-serif text-[17px] leading-[1.75] tracking-[-0.003em] outline-none placeholder:text-zinc-400/80 selection:bg-blue-100 dark:selection:bg-blue-900/40"
             value={value}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
-            placeholder="Start writing here. Saves automatically. Press ⌘/Ctrl + Enter for AI feedback."
+            placeholder="Begin writing your essay…   ⌘↵ for AI feedback"
             spellCheck
             lang="en"
             autoCorrect="on"
@@ -143,22 +143,23 @@ export function EssayEditor({
             aria-invalid={overLimit}
           />
           {savedAt && (
-            <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+            <span className="pointer-events-none absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider text-zinc-500 ring-1 ring-zinc-200/60 backdrop-blur dark:bg-zinc-900/70 dark:text-zinc-400 dark:ring-zinc-800">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Saved
             </span>
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-[11px]">
+          <div className="flex flex-wrap items-center gap-y-1">
             <span className={limitColor}>
               {chars.toLocaleString()} / {limit.maxChars.toLocaleString()} chars
               {overLimit && ` (over by ${(chars - limit.maxChars).toLocaleString()})`}
             </span>
-            <span className="text-zinc-500">{words.toLocaleString()} words</span>
-            <span className="text-zinc-500">{paragraphs} paragraph{paragraphs === 1 ? "" : "s"}</span>
-            <span className="text-zinc-500">~{readMinutes} min read</span>
-            <span className="text-zinc-500">~{limit.pages} pages target</span>
+            <span className="text-zinc-500 before:mx-2 before:content-['·']">{words.toLocaleString()} words</span>
+            <span className="text-zinc-500 before:mx-2 before:content-['·']">{paragraphs} paragraph{paragraphs === 1 ? "" : "s"}</span>
+            <span className="text-zinc-500 before:mx-2 before:content-['·']">~{readMinutes} min read</span>
+            <span className="text-zinc-500 before:mx-2 before:content-['·']">~{limit.pages} pages target</span>
           </div>
           <button
             type="button"
@@ -172,14 +173,14 @@ export function EssayEditor({
         </div>
 
         <div
-          className="h-1 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
+          className="h-[3px] w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
           role="progressbar"
           aria-valuenow={Math.min(100, Math.round(ratio * 100))}
           aria-valuemin={0}
           aria-valuemax={100}
         >
           <div
-            className={`h-full transition-all ${
+            className={`h-full rounded-full transition-all ${
               overLimit ? "bg-red-500" : nearLimit ? "bg-amber-500" : "bg-blue-500"
             }`}
             style={{ width: `${Math.min(100, ratio * 100)}%` }}
@@ -194,7 +195,7 @@ export function EssayEditor({
             Write at least a few sentences, then click "Get AI feedback" or press ⌘/Ctrl + Enter.
           </p>
         )}
-        {loading && <p className="text-xs text-zinc-500">Claude is reading your essay…</p>}
+        {loading && <p className="text-xs text-zinc-500">Gemini is reading your essay…</p>}
         {error && <p className="text-xs text-red-600">{error}</p>}
         {feedback && <FeedbackPanel feedback={feedback} />}
       </aside>

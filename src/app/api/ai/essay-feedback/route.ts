@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
 import { ESSAY_LABELS, FEEDBACK_SYSTEM_PROMPT, type EssayKind } from "@/lib/ai/prompts";
 
 export const runtime = "nodejs";
@@ -14,10 +13,25 @@ type Body = {
   };
 };
 
+type GeminiResponse = {
+  candidates?: Array<{
+    content?: { parts?: Array<{ text?: string }> };
+    finishReason?: string;
+  }>;
+  usageMetadata?: {
+    promptTokenCount?: number;
+    candidatesTokenCount?: number;
+  };
+  error?: { message?: string };
+};
+
+const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     return NextResponse.json(
-      { error: "Server is missing ANTHROPIC_API_KEY. Add it to .env.local." },
+      { error: "Server is missing GEMINI_API_KEY. Add it to .env.local." },
       { status: 500 },
     );
   }
@@ -37,8 +51,6 @@ export async function POST(req: Request) {
     );
   }
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
   const userMsg = [
     `Essay type: ${ESSAY_LABELS[body.kind]}.`,
     body.context?.track ? `Applicant track: ${body.context.track}.` : null,
@@ -56,23 +68,32 @@ export async function POST(req: Request) {
     .join("\n");
 
   try {
-    const resp = await client.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1500,
-      system: [
-        {
-          type: "text",
-          text: FEEDBACK_SYSTEM_PROMPT,
-          cache_control: { type: "ephemeral" },
+    const r = await fetch(`${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: FEEDBACK_SYSTEM_PROMPT }] },
+        contents: [{ role: "user", parts: [{ text: userMsg }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.4,
+          maxOutputTokens: 1500,
         },
-      ],
-      messages: [{ role: "user", content: userMsg }],
+      }),
     });
 
-    const text = resp.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
+    const data = (await r.json()) as GeminiResponse;
+    if (!r.ok) {
+      throw new Error(data.error?.message ?? `Gemini request failed (${r.status})`);
+    }
+
+    const text = (data.candidates?.[0]?.content?.parts ?? [])
+      .map((p) => p.text ?? "")
       .join("");
+
+    if (!text) {
+      throw new Error("Gemini returned an empty response");
+    }
 
     let parsed: unknown;
     try {
@@ -90,10 +111,8 @@ export async function POST(req: Request) {
     return NextResponse.json({
       feedback: parsed,
       usage: {
-        inputTokens: resp.usage.input_tokens,
-        outputTokens: resp.usage.output_tokens,
-        cacheReadTokens: resp.usage.cache_read_input_tokens ?? 0,
-        cacheCreationTokens: resp.usage.cache_creation_input_tokens ?? 0,
+        inputTokens: data.usageMetadata?.promptTokenCount ?? 0,
+        outputTokens: data.usageMetadata?.candidatesTokenCount ?? 0,
       },
     });
   } catch (err) {
