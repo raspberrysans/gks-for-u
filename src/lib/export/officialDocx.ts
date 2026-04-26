@@ -155,22 +155,37 @@ function appendInNextCell(
   occurrence: number,
   value: string,
 ): string {
+  return appendInSiblingCell(xml, anchor, occurrence, 1, value);
+}
+
+// Find the Nth sibling <w:tc> after the cell containing the anchor (within the same <w:tr>),
+// and append `value` as a paragraph inside it. siblingOffset=1 means the immediately next cell.
+function appendInSiblingCell(
+  xml: string,
+  anchor: string,
+  occurrence: number,
+  siblingOffset: number,
+  value: string,
+): string {
   if (!value) return xml;
   const idx = buildTextIndex(xml);
   const off = findAnchorXmlOffset(idx, anchor, occurrence);
   if (off < 0) return xml;
-  const tc = findEnclosingTc(xml, off);
+  let tc = findEnclosingTc(xml, off);
   if (!tc) return xml;
   const trCloseIdx = xml.indexOf("</w:tr>", tc[1]);
-  const o1 = xml.indexOf("<w:tc>", tc[1]);
-  const o2 = xml.indexOf("<w:tc ", tc[1]);
-  const cands = [o1, o2].filter((n) => n >= 0);
-  if (cands.length === 0) return xml;
-  const nextTcOpen = Math.min(...cands);
-  if (trCloseIdx >= 0 && nextTcOpen > trCloseIdx) return xml;
-  const sib = findEnclosingTc(xml, nextTcOpen + 1);
-  if (!sib) return xml;
-  const insertAt = sib[1] - "</w:tc>".length;
+  for (let step = 0; step < siblingOffset; step++) {
+    const o1 = xml.indexOf("<w:tc>", tc[1]);
+    const o2 = xml.indexOf("<w:tc ", tc[1]);
+    const cands = [o1, o2].filter((n) => n >= 0);
+    if (cands.length === 0) return xml;
+    const nextTcOpen = Math.min(...cands);
+    if (trCloseIdx >= 0 && nextTcOpen > trCloseIdx) return xml;
+    const sib = findEnclosingTc(xml, nextTcOpen + 1);
+    if (!sib) return xml;
+    tc = sib;
+  }
+  const insertAt = tc[1] - "</w:tc>".length;
   return xml.slice(0, insertAt) + buildParagraph(value) + xml.slice(insertAt);
 }
 
@@ -223,7 +238,7 @@ function fillAllForms(xml: string, draft: ApplicationDraft): string {
   xml = appendInCell(xml, "Given Name", 0, p.givenName ?? "");
   xml = appendInCell(xml, "Middle Name", 0, p.middleName ?? "");
   xml = appendInNextCell(xml, "Date of Birth", 0, p.dateOfBirth ?? "");
-  xml = appendInCell(xml, " of Citizenship ", 0, countryName(p.citizenshipCountryCode));
+  xml = appendInNextCell(xml, " of Citizenship ", 0, countryName(p.citizenshipCountryCode));
   xml = appendInCell(
     xml,
     "Address",
@@ -232,8 +247,8 @@ function fillAllForms(xml: string, draft: ApplicationDraft): string {
   );
   xml = appendInCell(xml, "Phone (start with the country code)", 0, p.phone ?? "");
   xml = appendInCell(xml, "-mail", 0, p.email ?? "");
-  xml = appendInCell(xml, "High School Name", 0, e.highSchoolName ?? "");
-  xml = appendInCell(
+  xml = appendInNextCell(xml, "High School Name", 0, e.highSchoolName ?? "");
+  xml = appendInNextCell(
     xml,
     "Period of Attendance",
     0,
@@ -241,17 +256,19 @@ function fillAllForms(xml: string, draft: ApplicationDraft): string {
       ? `${e.highSchoolStart} ~ ${e.highSchoolEnd}`
       : "",
   );
-  xml = appendInCell(xml, "Date of e", 0, e.expectedGraduationDate ?? "");
+  xml = appendInNextCell(xml, "Date of e", 0, e.expectedGraduationDate ?? "");
   if (e.gpaValue !== undefined) {
     xml = appendInCell(xml, "Converted CGPA", 0, `${e.gpaValue}/${e.gpaScale ?? "4.0"}`);
   }
 
+  // Choice rows have dedicated columns for University / Field of Study / Department,
+  // sitting one, two, and three cells to the right of the "Choice N" label cell.
   draft.universities.choices.forEach((c, i) => {
     if (!c.universityId && !c.department && !c.fieldOfStudy) return;
-    const value = [uniName(c.universityId), c.fieldOfStudy, c.department]
-      .filter(Boolean)
-      .join(" — ");
-    xml = appendInCell(xml, "Choice ", i + 1, value);
+    const occ = i + 1;
+    xml = appendInSiblingCell(xml, "Choice ", occ, 1, uniName(c.universityId));
+    xml = appendInSiblingCell(xml, "Choice ", occ, 2, c.fieldOfStudy ?? "");
+    xml = appendInSiblingCell(xml, "Choice ", occ, 3, c.department ?? "");
   });
 
   // FORM 2 — anchor on the LAST sentence of the instructions block so the essay lands
