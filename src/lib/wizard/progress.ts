@@ -72,8 +72,17 @@ export function computeProgress(draft: ApplicationDraft): {
       id: "study-plan",
       label: "Study Plan",
       href: "/apply/study-plan",
-      status: essayStatus(draft.essays.studyPlan, ESSAY_LIMITS.study_plan.maxChars),
-      detail: `${draft.essays.studyPlan.length.toLocaleString()} chars`,
+      status: essayStatus(
+        draft.essays.studyPlan.languagePlan +
+          draft.essays.studyPlan.goalOfStudy +
+          draft.essays.studyPlan.futurePlan,
+        ESSAY_LIMITS.study_plan.maxChars,
+      ),
+      detail: `${(
+        draft.essays.studyPlan.languagePlan.length +
+        draft.essays.studyPlan.goalOfStudy.length +
+        draft.essays.studyPlan.futurePlan.length
+      ).toLocaleString()} chars`,
     },
     {
       id: "recommendation",

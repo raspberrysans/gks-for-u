@@ -14,7 +14,11 @@ function emptyDraft(): ApplicationDraft {
     education: {},
     languages: { topikLevel: 0 },
     universities: { choices: [{}, {}, {}] },
-    essays: { personalStatement: "", studyPlan: "", recommendation: "" },
+    essays: {
+      personalStatement: "",
+      studyPlan: { languagePlan: "", goalOfStudy: "", futurePlan: "" },
+      recommendation: "",
+    },
     flags: {},
   };
 }
@@ -28,6 +32,31 @@ function getServerSnapshot(): ApplicationDraft {
   return serverSnapshot;
 }
 
+// Pre-sectioned drafts stored studyPlan as a single string. Move that text into the
+// languagePlan slot so the user doesn't lose anything they'd already written.
+function migrate(d: ApplicationDraft): ApplicationDraft {
+  const sp = (d.essays as { studyPlan: unknown }).studyPlan;
+  if (typeof sp === "string") {
+    return {
+      ...d,
+      essays: {
+        ...d.essays,
+        studyPlan: { languagePlan: sp, goalOfStudy: "", futurePlan: "" },
+      },
+    };
+  }
+  if (!sp || typeof sp !== "object") {
+    return {
+      ...d,
+      essays: {
+        ...d.essays,
+        studyPlan: { languagePlan: "", goalOfStudy: "", futurePlan: "" },
+      },
+    };
+  }
+  return d;
+}
+
 function load(): ApplicationDraft {
   if (memo) return memo;
   if (typeof window === "undefined") {
@@ -36,7 +65,7 @@ function load(): ApplicationDraft {
   }
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    memo = raw ? (JSON.parse(raw) as ApplicationDraft) : emptyDraft();
+    memo = raw ? migrate(JSON.parse(raw) as ApplicationDraft) : emptyDraft();
   } catch {
     memo = emptyDraft();
   }
@@ -85,7 +114,7 @@ export function useDraft(): ApplicationDraft {
     if (typeof window !== "undefined") {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        memo = JSON.parse(raw) as ApplicationDraft;
+        memo = migrate(JSON.parse(raw) as ApplicationDraft);
         listeners.forEach((l) => l());
       }
     }

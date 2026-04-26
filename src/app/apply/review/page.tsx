@@ -2,6 +2,7 @@
 
 import { WizardShell, btnPrimary, btnSecondary } from "@/components/wizard/WizardShell";
 import { useDraft } from "@/lib/wizard/store";
+import { FORM_META } from "@/lib/export/formMeta";
 import { evaluateEligibility } from "@/lib/eligibility/engine";
 import { computeRubric } from "@/lib/scoring/rubric";
 import { computeCompetitiveness } from "@/lib/scoring/competitiveness";
@@ -57,19 +58,22 @@ export default function ReviewPage() {
  const rubric = computeRubric(scoringInput);
  const comp = computeCompetitiveness(scoringInput, rubric);
 
+ const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
  async function exportPdf() {
  const { generateApplicationPdf } = await import("@/lib/export/pdf");
  const bytes = await generateApplicationPdf(draft);
  downloadBlob(bytes, "application/pdf", "gks-2026-application.pdf");
  }
- async function exportDocx() {
+ async function exportCombinedDocx() {
  const { generateApplicationDocx } = await import("@/lib/export/officialDocx");
  const bytes = await generateApplicationDocx(draft);
- downloadBlob(
- bytes,
- "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
- "gks-2026-application.docx",
- );
+ downloadBlob(bytes, DOCX_MIME, "gks-2026-application.docx");
+ }
+ async function exportSingleForm(n: 1 | 2 | 3 | 4 | 5 | 6, filename: string) {
+ const { buildSingleFormDocx } = await import("@/lib/export/officialDocx");
+ const bytes = await buildSingleFormDocx(draft, n);
+ downloadBlob(bytes, DOCX_MIME, filename);
  }
 
  return (
@@ -125,9 +129,34 @@ export default function ReviewPage() {
  </section>
  )}
 
- <section className="mt-8 flex flex-wrap gap-3 border-t border-[color:var(--line)] pt-6 ">
- <button onClick={exportPdf} className={btnPrimary}>Download PDF</button>
- <button onClick={exportDocx} className={btnSecondary}>Download DOCX</button>
+ <section className="mt-8 border-t border-[color:var(--line)] pt-6">
+ <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[color:var(--muted)]">Download forms one by one</p>
+ <p className="mb-4 text-xs text-[color:var(--muted)]">
+ Each form is a separate Word file containing only that form&rsquo;s pages, prefilled where possible.
+ FORMs 4–6 are intentionally blank — print and complete by hand (signatures required).
+ </p>
+ <ul className="divide-y divide-[color:var(--line)] rounded-2xl border border-[color:var(--line)] ">
+ {FORM_META.map((f) => (
+ <li key={f.n} className="flex items-center justify-between gap-3 px-4 py-3">
+ <div>
+ <p className="text-sm font-medium">FORM {f.n} — {f.title}</p>
+ <p className="text-xs text-[color:var(--muted)]">
+ {f.filled ? "Prefilled from your draft" : "Blank official sheet — sign by hand"}
+ </p>
+ </div>
+ <button
+ onClick={() => exportSingleForm(f.n, f.filename)}
+ className={btnSecondary}
+ >
+ Download
+ </button>
+ </li>
+ ))}
+ </ul>
+ <div className="mt-4 flex flex-wrap gap-3">
+ <button onClick={exportPdf} className={btnPrimary}>Download PDF (all forms)</button>
+ <button onClick={exportCombinedDocx} className={btnSecondary}>Download DOCX (all forms)</button>
+ </div>
  </section>
  </WizardShell>
  );

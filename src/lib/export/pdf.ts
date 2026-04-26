@@ -184,7 +184,14 @@ export async function generateApplicationPdf(draft: ApplicationDraft): Promise<U
   // FORM 3
   w.newPage();
   w.h1("FORM 3 — Study Plan");
-  w.paragraph(draft.essays.studyPlan);
+  w.h2("1. Language Study Plan");
+  w.paragraph(draft.essays.studyPlan.languagePlan);
+  w.spacer(12);
+  w.h2("2. Goal of Study & Study Plan");
+  w.paragraph(draft.essays.studyPlan.goalOfStudy);
+  w.spacer(12);
+  w.h2("3. Future Plan after Study");
+  w.paragraph(draft.essays.studyPlan.futurePlan);
 
   // FORM 4
   w.newPage();

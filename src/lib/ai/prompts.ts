@@ -1,14 +1,26 @@
-export type EssayKind = "personal_statement" | "study_plan" | "recommendation";
+export type EssayKind =
+  | "personal_statement"
+  | "study_plan"
+  | "study_plan_language"
+  | "study_plan_goal"
+  | "study_plan_future"
+  | "recommendation";
 
 export const ESSAY_LABELS: Record<EssayKind, string> = {
   personal_statement: "Personal Statement (FORM 2)",
   study_plan: "Study Plan (FORM 3)",
+  study_plan_language: "Study Plan — Language Study Plan (FORM 3)",
+  study_plan_goal: "Study Plan — Goal of Study & Study Plan (FORM 3)",
+  study_plan_future: "Study Plan — Future Plan after Study (FORM 3)",
   recommendation: "Recommendation Letter (FORM 4) — drafted from recommender's POV",
 };
 
 export const ESSAY_LIMITS: Record<EssayKind, { maxChars: number; pages: number }> = {
   personal_statement: { maxChars: 6000, pages: 2 },
   study_plan: { maxChars: 9000, pages: 3 },
+  study_plan_language: { maxChars: 3000, pages: 1 },
+  study_plan_goal: { maxChars: 4000, pages: 1.5 },
+  study_plan_future: { maxChars: 2000, pages: 0.5 },
   recommendation: { maxChars: 4000, pages: 1 },
 };
 
@@ -23,6 +35,20 @@ export const ESSAY_PROMPTS: Record<EssayKind, string[]> = {
     "Korean language plan — current level, plan to reach TOPIK 4+ before degree.",
     "Academic plan — degree goals, courses, research interests, timeline.",
     "Post-graduation plan — how you'll use the degree to contribute (in Korea or your home country).",
+  ],
+  study_plan_language: [
+    "Current Korean (and English) level — TOPIK level / scores, prior coursework.",
+    "Concrete plan during the 1-year language program in Korea (target TOPIK 4+).",
+    "How you will keep improving throughout the degree.",
+  ],
+  study_plan_goal: [
+    "Why this degree, why this field, why these universities.",
+    "Specific courses, professors, labs, or research areas you want to engage with.",
+    "Year-by-year academic plan with milestones (coursework, projects, internships).",
+  ],
+  study_plan_future: [
+    "Concrete plan after graduating — career, further study, or return to home country.",
+    "How the degree connects to that plan and benefits Korea–home relations or your field.",
   ],
   recommendation: [
     "Capacity in which the recommender knows you (role, years, classes).",

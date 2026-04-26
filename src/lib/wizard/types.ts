@@ -52,7 +52,11 @@ export type ApplicationDraft = {
 
   essays: {
     personalStatement: string;
-    studyPlan: string;
+    studyPlan: {
+      languagePlan: string;
+      goalOfStudy: string;
+      futurePlan: string;
+    };
     recommendation: string;
   };
 

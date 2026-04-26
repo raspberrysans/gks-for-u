@@ -2,6 +2,9 @@ import JSZip from "jszip";
 import universities from "../../../data/universities.json";
 import countries from "../../../data/countries.json";
 import type { ApplicationDraft } from "../wizard/types";
+import { FORM_META, type FormNumber } from "./formMeta";
+
+export { FORM_META, type FormNumber };
 
 const ALL_UNIS = [...universities.typeA, ...universities.typeB];
 const uniName = (id?: string) =>
@@ -30,7 +33,6 @@ function escapeXml(s: string): string {
     .replace(/'/g, "&apos;");
 }
 
-// Build a Word run with Times New Roman 11pt, matching the form's font requirements.
 function buildRun(text: string, opts: { bold?: boolean } = {}): string {
   const lines = text.split("\n");
   const runs: string[] = [];
@@ -50,10 +52,6 @@ function buildParagraph(text: string, opts: { bold?: boolean } = {}): string {
   return `<w:p><w:pPr><w:spacing w:after="0" w:line="276" w:lineRule="auto"/><w:rPr><w:rFonts w:ascii="Times New Roman" w:eastAsia="굴림" w:hAnsi="Times New Roman"/><w:sz w:val="22"/></w:rPr></w:pPr>${buildRun(text, opts)}</w:p>`;
 }
 
-// Build an index that lets us search the document's flowing text (joined across <w:t> runs)
-// while mapping a hit back to a concrete byte offset in the original XML.
-// `joined` is the concatenation of every <w:t>...</w:t> body; each entry in `runs` records
-// the xml offset of that run's text content and the length of that content.
 type TextIndex = {
   joined: string;
   runs: Array<{ xmlStart: number; length: number; joinedStart: number }>;
@@ -74,7 +72,6 @@ function buildTextIndex(xml: string): TextIndex {
   return { joined, runs };
 }
 
-// Find the n-th occurrence (0-indexed) of `needle` in joined text; return the XML offset of its first character.
 function findAnchorXmlOffset(
   index: TextIndex,
   needle: string,
@@ -85,7 +82,6 @@ function findAnchorXmlOffset(
     const hit = index.joined.indexOf(needle, from);
     if (hit < 0) return -1;
     if (i === occurrence) {
-      // Find the run that contains this joined offset.
       for (const r of index.runs) {
         if (hit >= r.joinedStart && hit < r.joinedStart + r.length) {
           return r.xmlStart + (hit - r.joinedStart);
@@ -98,7 +94,6 @@ function findAnchorXmlOffset(
   return -1;
 }
 
-// Given an index that lies inside a <w:tc>, return [tcStart, tcEnd] (inclusive of tags).
 function findEnclosingTc(
   xml: string,
   innerIndex: number,
@@ -110,7 +105,6 @@ function findEnclosingTc(
     const tcStart = Math.max(open, openWithAttr);
     if (tcStart < 0) return null;
 
-    // Walk forward from tcStart with proper depth counting.
     let depth = 0;
     let i = tcStart;
     while (i < xml.length) {
@@ -180,9 +174,6 @@ function appendInNextCell(
   return xml.slice(0, insertAt) + buildParagraph(value) + xml.slice(insertAt);
 }
 
-// Replace the empty paragraph block sitting just below a heading anchor (Form 2/3 essay body).
-// We insert paragraphs immediately after the first <w:p>...anchor...</w:p> within the document
-// region containing the form. Splits on \n\n into paragraphs.
 function insertEssayAfter(
   xml: string,
   anchor: string,
@@ -204,39 +195,23 @@ function insertEssayAfter(
   return xml.slice(0, insertAt) + paragraphs + xml.slice(insertAt);
 }
 
-export async function generateApplicationDocx(
-  draft: ApplicationDraft,
-): Promise<Uint8Array> {
-  const tplBytes = await loadTemplate();
-  const zip = await JSZip.loadAsync(tplBytes);
-  const docXmlFile = zip.file("word/document.xml");
-  if (!docXmlFile) throw new Error("Template missing word/document.xml");
-  let xml = await docXmlFile.async("string");
-
+function fillAllForms(xml: string, draft: ApplicationDraft): string {
   const p = draft.profile;
   const e = draft.education;
 
-  // FORM 1 — Personal info. Each anchor's `occurrence` is its 0-indexed match in the document's
-  // joined <w:t> text; values are appended as a new paragraph at the end of the cell that holds
-  // the anchor. Sibling-cell mode is used when the label and value live in separate cells.
+  // FORM 1 — Personal info.
   xml = appendInCell(xml, "Family Name", 0, p.familyName ?? "");
-  // "Given Name" appears in FORM 1 (occurrence 0) and again in FORM 4 (occurrence 1).
   xml = appendInCell(xml, "Given Name", 0, p.givenName ?? "");
   xml = appendInCell(xml, "Middle Name", 0, p.middleName ?? "");
-  // DOB label is in a narrow label cell, value goes in the adjacent cell.
   xml = appendInNextCell(xml, "Date of Birth", 0, p.dateOfBirth ?? "");
-  // "Country" + " of Citizenship " is split; anchor on the first " of Citizenship " text run.
-  // First (FORM 1) match is occurrence 0; FORM 4 is occurrence 1.
   xml = appendInCell(xml, " of Citizenship ", 0, countryName(p.citizenshipCountryCode));
-  // Address / Phone / E-mail share Row pattern: label cell + empty value paragraphs in same cell.
   xml = appendInCell(
     xml,
     "Address",
-    0, // FORM 1 first
+    0,
     [p.addressLine1, p.addressLine2, p.addressCountry].filter(Boolean).join(", "),
   );
   xml = appendInCell(xml, "Phone (start with the country code)", 0, p.phone ?? "");
-  // "E-mail" is split as "E" + "-mail"; "-mail" appears once and is uniquely the email field.
   xml = appendInCell(xml, "-mail", 0, p.email ?? "");
   xml = appendInCell(xml, "High School Name", 0, e.highSchoolName ?? "");
   xml = appendInCell(
@@ -247,15 +222,11 @@ export async function generateApplicationDocx(
       ? `${e.highSchoolStart} ~ ${e.highSchoolEnd}`
       : "",
   );
-  // "Date of expected graduation" is split — anchor on "Date of e" first occurrence (HS section).
   xml = appendInCell(xml, "Date of e", 0, e.expectedGraduationDate ?? "");
   if (e.gpaValue !== undefined) {
     xml = appendInCell(xml, "Converted CGPA", 0, `${e.gpaValue}/${e.gpaScale ?? "4.0"}`);
   }
 
-  // University choices — "Choice " text runs appear in this order in the document:
-  //   [0] "Choice of University and Department"  (header — skip)
-  //   [1] Choice 1, [2] Choice 2, [3] Choice 3
   draft.universities.choices.forEach((c, i) => {
     if (!c.universityId && !c.department && !c.fieldOfStudy) return;
     const value = [uniName(c.universityId), c.fieldOfStudy, c.department]
@@ -264,21 +235,113 @@ export async function generateApplicationDocx(
     xml = appendInCell(xml, "Choice ", i + 1, value);
   });
 
-  // FORM 2 — Personal Statement body. Anchor "PERSONAL STATEMENT" appears once in the
-  // FORM 2 title; we insert paragraphs immediately after that title's <w:p>.
+  // FORM 2
   xml = insertEssayAfter(xml, "PERSONAL STATEMENT", draft.essays.personalStatement);
 
-  // FORM 3 — Study Plan body. "STUDY PLAN" first occurrence is FORM 3's title.
-  xml = insertEssayAfter(xml, "STUDY PLAN", draft.essays.studyPlan);
+  // FORM 3 — three official sub-sections, each inserted right after its sub-heading paragraph.
+  const sp = draft.essays.studyPlan;
+  xml = insertEssayAfter(xml, "Language Study Plan", sp.languagePlan);
+  xml = insertEssayAfter(xml, "Goal of study", sp.goalOfStudy);
+  // Source DOCX renders this heading as "Future Planafter Study" (no space) in one run;
+  // anchor on the "Future Plan" prefix which is unique inside FORM 3.
+  xml = insertEssayAfter(xml, "Future Plan", sp.futurePlan);
 
-  // FORM 4 (recommender), FORM 5 (agreement), FORM 6 (medical) are intentionally left
-  // for the user to complete by hand on the printed form — those pages need ink signatures
-  // and case-by-case acknowledgements.
+  // FORMs 4–6 left blank — they need ink signatures and applicant-specific acknowledgements.
 
+  return xml;
+}
+
+// Find the start of the <w:p> paragraph that contains the given xml offset.
+function findEnclosingParagraphStart(xml: string, off: number): number {
+  const a = xml.lastIndexOf("<w:p>", off);
+  const b = xml.lastIndexOf("<w:p ", off);
+  return Math.max(a, b);
+}
+
+// Slice the filled XML to just the range of FORM `n`. Range = from the start of the form's
+// heading paragraph to the start of the next form's heading paragraph (or to the trailing
+// <w:sectPr> for FORM 6).
+function sliceFormRange(xml: string, n: FormNumber): { start: number; end: number } | null {
+  const idx = buildTextIndex(xml);
+  const startOff = findAnchorXmlOffset(idx, `FORM ${n}.`, 0);
+  if (startOff < 0) return null;
+  const start = findEnclosingParagraphStart(xml, startOff);
+  if (start < 0) return null;
+
+  let end: number;
+  if (n < 6) {
+    const nextOff = findAnchorXmlOffset(idx, `FORM ${(n + 1) as FormNumber}.`, 0);
+    if (nextOff < 0) return null;
+    end = findEnclosingParagraphStart(xml, nextOff);
+    if (end < 0) return null;
+  } else {
+    const bodyEnd = xml.lastIndexOf("</w:body>");
+    const sectPrStart = xml.lastIndexOf("<w:sectPr", bodyEnd);
+    end = sectPrStart >= 0 ? sectPrStart : bodyEnd;
+  }
+  return { start, end };
+}
+
+function wrapSingleFormBody(originalXml: string, slice: string): string {
+  const bodyOpenAttr = originalXml.indexOf("<w:body>");
+  const bodyOpenLen = "<w:body>".length;
+  const bodyEnd = originalXml.lastIndexOf("</w:body>");
+  const sectPrStart = originalXml.lastIndexOf("<w:sectPr", bodyEnd);
+  let sectPr = "";
+  if (sectPrStart >= 0) {
+    const close = originalXml.indexOf("</w:sectPr>", sectPrStart);
+    if (close >= 0) {
+      sectPr = originalXml.slice(sectPrStart, close + "</w:sectPr>".length);
+    } else {
+      const selfClose = originalXml.indexOf("/>", sectPrStart);
+      if (selfClose >= 0 && selfClose < bodyEnd) {
+        sectPr = originalXml.slice(sectPrStart, selfClose + 2);
+      }
+    }
+  }
+  return (
+    originalXml.slice(0, bodyOpenAttr + bodyOpenLen) +
+    slice +
+    sectPr +
+    originalXml.slice(bodyEnd)
+  );
+}
+
+async function buildDocxFromXml(xml: string): Promise<Uint8Array> {
+  const tplBytes = await loadTemplate();
+  const zip = await JSZip.loadAsync(tplBytes);
   zip.file("word/document.xml", xml);
-  const out = await zip.generateAsync({
-    type: "uint8array",
-    compression: "DEFLATE",
-  });
-  return out;
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+}
+
+export async function generateApplicationDocx(
+  draft: ApplicationDraft,
+): Promise<Uint8Array> {
+  const tplBytes = await loadTemplate();
+  const zip = await JSZip.loadAsync(tplBytes);
+  const docXmlFile = zip.file("word/document.xml");
+  if (!docXmlFile) throw new Error("Template missing word/document.xml");
+  let xml = await docXmlFile.async("string");
+  xml = fillAllForms(xml, draft);
+  zip.file("word/document.xml", xml);
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE" });
+}
+
+export async function buildSingleFormDocx(
+  draft: ApplicationDraft,
+  n: FormNumber,
+): Promise<Uint8Array> {
+  const tplBytes = await loadTemplate();
+  const zip = await JSZip.loadAsync(tplBytes);
+  const docXmlFile = zip.file("word/document.xml");
+  if (!docXmlFile) throw new Error("Template missing word/document.xml");
+  const originalXml = await docXmlFile.async("string");
+  const filledXml = fillAllForms(originalXml, draft);
+
+  const range = sliceFormRange(filledXml, n);
+  if (!range)
+    throw new Error(`Could not locate FORM ${n} boundaries in template.`);
+  const slice = filledXml.slice(range.start, range.end);
+  const finalXml = wrapSingleFormBody(filledXml, slice);
+  return buildDocxFromXml(finalXml);
 }
