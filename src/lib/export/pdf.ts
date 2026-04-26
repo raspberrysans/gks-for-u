@@ -94,29 +94,26 @@ class PdfWriter {
       return;
     }
     const maxWidth = PAGE_WIDTH - MARGIN * 2;
-    const words = sanitize(text).replace(/\r/g, "").split(/(\s+)/);
-    let line = "";
-    for (const w of words) {
-      const test = line + w;
-      if (this.font.widthOfTextAtSize(test, 10) > maxWidth) {
-        this.ensureSpace(LINE_HEIGHT);
-        this.page.drawText(line.trimEnd(), { x: MARGIN, y: this.y - 10, size: 10, font: this.font });
-        this.y -= LINE_HEIGHT;
-        line = w.trimStart();
-      } else {
-        line = test;
-      }
-      if (w.includes("\n")) {
-        this.ensureSpace(LINE_HEIGHT);
-        this.page.drawText(line, { x: MARGIN, y: this.y - 10, size: 10, font: this.font });
-        this.y -= LINE_HEIGHT;
-        line = "";
-      }
-    }
-    if (line) {
+    const flush = (s: string) => {
       this.ensureSpace(LINE_HEIGHT);
-      this.page.drawText(line, { x: MARGIN, y: this.y - 10, size: 10, font: this.font });
+      this.page.drawText(s, { x: MARGIN, y: this.y - 10, size: 10, font: this.font });
       this.y -= LINE_HEIGHT;
+    };
+    const lines = sanitize(text).replace(/\r/g, "").split(/\n/);
+    for (let li = 0; li < lines.length; li++) {
+      const tokens = lines[li].split(/(\s+)/);
+      let line = "";
+      for (const w of tokens) {
+        const test = line + w;
+        if (this.font.widthOfTextAtSize(test, 10) > maxWidth) {
+          flush(line.trimEnd());
+          line = w.trimStart();
+        } else {
+          line = test;
+        }
+      }
+      if (line) flush(line);
+      else if (li < lines.length - 1) this.y -= LINE_HEIGHT; // blank line between paragraphs
     }
     this.y -= 6;
   }
@@ -184,14 +181,21 @@ export async function generateApplicationPdf(draft: ApplicationDraft): Promise<U
   // FORM 3
   w.newPage();
   w.h1("FORM 3 — Study Plan");
-  w.h2("1. Language Study Plan");
-  w.paragraph(draft.essays.studyPlan.languagePlan);
-  w.spacer(12);
-  w.h2("2. Goal of Study & Study Plan");
-  w.paragraph(draft.essays.studyPlan.goalOfStudy);
-  w.spacer(12);
-  w.h2("3. Future Plan after Study");
-  w.paragraph(draft.essays.studyPlan.futurePlan);
+  const sp = draft.essays.studyPlan;
+  const studyParts: Array<[string, string]> = [
+    ["1. Language Study Plan", sp.languagePlan],
+    ["2. Goal of Study & Study Plan", sp.goalOfStudy],
+    ["3. Future Plan after Study", sp.futurePlan],
+  ];
+  let printedAny = false;
+  for (const [heading, body] of studyParts) {
+    if (!body?.trim()) continue;
+    if (printedAny) w.spacer(12);
+    w.h2(heading);
+    w.paragraph(body);
+    printedAny = true;
+  }
+  if (!printedAny) w.paragraph("");
 
   // FORM 4
   w.newPage();

@@ -174,6 +174,15 @@ function appendInNextCell(
   return xml.slice(0, insertAt) + buildParagraph(value) + xml.slice(insertAt);
 }
 
+function bodyToParagraphs(body: string): string {
+  const blocks = body
+    .replace(/\r\n/g, "\n")
+    .split(/\n{2,}/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  return blocks.map((b) => buildParagraph(b)).join("");
+}
+
 function insertEssayAfter(
   xml: string,
   anchor: string,
@@ -186,13 +195,23 @@ function insertEssayAfter(
   const pCloseIdx = xml.indexOf("</w:p>", off);
   if (pCloseIdx < 0) return xml;
   const insertAt = pCloseIdx + "</w:p>".length;
-  const blocks = body
-    .replace(/\r\n/g, "\n")
-    .split(/\n{2,}/)
-    .map((b) => b.trim())
-    .filter(Boolean);
-  const paragraphs = blocks.map((b) => buildParagraph(b)).join("");
-  return xml.slice(0, insertAt) + paragraphs + xml.slice(insertAt);
+  return xml.slice(0, insertAt) + bodyToParagraphs(body) + xml.slice(insertAt);
+}
+
+// Insert a multi-paragraph block (built from `content`) after the paragraph that contains `anchor`.
+function insertBlockAfter(
+  xml: string,
+  anchor: string,
+  content: string,
+): string {
+  if (!content) return xml;
+  const idx = buildTextIndex(xml);
+  const off = findAnchorXmlOffset(idx, anchor, 0);
+  if (off < 0) return xml;
+  const pCloseIdx = xml.indexOf("</w:p>", off);
+  if (pCloseIdx < 0) return xml;
+  const insertAt = pCloseIdx + "</w:p>".length;
+  return xml.slice(0, insertAt) + content + xml.slice(insertAt);
 }
 
 function fillAllForms(xml: string, draft: ApplicationDraft): string {
@@ -235,16 +254,40 @@ function fillAllForms(xml: string, draft: ApplicationDraft): string {
     xml = appendInCell(xml, "Choice ", i + 1, value);
   });
 
-  // FORM 2
-  xml = insertEssayAfter(xml, "PERSONAL STATEMENT", draft.essays.personalStatement);
+  // FORM 2 — anchor on the LAST sentence of the instructions block so the essay lands
+  // after every instruction paragraph (intro + bullet list + supplementary-docs note),
+  // immediately before the Date/Signature footer.
+  xml = insertEssayAfter(
+    xml,
+    "Other documents can be submitted",
+    draft.essays.personalStatement,
+  );
 
-  // FORM 3 — three official sub-sections, each inserted right after its sub-heading paragraph.
+  // FORM 3 — three official sub-sections. The sub-section headings live inside table cells,
+  // so we insert one composite block after FORM 3's instructions paragraph (which is a
+  // top-level paragraph just above the Date/Signature footer). Each user-filled section gets
+  // its own bold heading so reviewers can tell them apart.
   const sp = draft.essays.studyPlan;
-  xml = insertEssayAfter(xml, "Language Study Plan", sp.languagePlan);
-  xml = insertEssayAfter(xml, "Goal of study", sp.goalOfStudy);
-  // Source DOCX renders this heading as "Future Planafter Study" (no space) in one run;
-  // anchor on the "Future Plan" prefix which is unique inside FORM 3.
-  xml = insertEssayAfter(xml, "Future Plan", sp.futurePlan);
+  const studyPlanParts: string[] = [];
+  if (sp.languagePlan?.trim()) {
+    studyPlanParts.push(buildParagraph("1. Language Study Plan", { bold: true }));
+    studyPlanParts.push(bodyToParagraphs(sp.languagePlan));
+  }
+  if (sp.goalOfStudy?.trim()) {
+    studyPlanParts.push(buildParagraph("2. Goal of Study & Study Plan", { bold: true }));
+    studyPlanParts.push(bodyToParagraphs(sp.goalOfStudy));
+  }
+  if (sp.futurePlan?.trim()) {
+    studyPlanParts.push(buildParagraph("3. Future Plan after Study", { bold: true }));
+    studyPlanParts.push(bodyToParagraphs(sp.futurePlan));
+  }
+  if (studyPlanParts.length > 0) {
+    xml = insertBlockAfter(
+      xml,
+      "single spaced within THREE pages",
+      studyPlanParts.join(""),
+    );
+  }
 
   // FORMs 4–6 left blank — they need ink signatures and applicant-specific acknowledgements.
 
