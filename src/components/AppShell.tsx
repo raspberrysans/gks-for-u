@@ -20,6 +20,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Link href="/apply" className="link-draw hover:text-[color:var(--ink)]">
               application
             </Link>
+            <Link href="/blog" className="link-draw hover:text-[color:var(--ink)]">
+              blog
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />

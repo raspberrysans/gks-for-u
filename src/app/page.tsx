@@ -45,6 +45,9 @@ function Nav() {
           <a href="#faq" className="link-draw lowercase hover:text-[color:var(--ink)]">
             faq
           </a>
+          <Link href="/blog" className="link-draw lowercase hover:text-[color:var(--ink)]">
+            blog
+          </Link>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />

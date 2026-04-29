@@ -1,10 +1,41 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "gks for u. apply to the global korea scholarship with confidence.",
-  description:
-    "the first ai companion built end to end for the global korea scholarship. check eligibility in two minutes, write essays the rubric rewards, and submit gks 2026 with confidence.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "gks for u. apply to the global korea scholarship with confidence.",
+    template: "%s | gks for u",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME }],
+  keywords: [
+    "Global Korea Scholarship",
+    "GKS",
+    "GKS-U",
+    "Korea scholarship",
+    "study in Korea",
+    "NIIED",
+    "Korean government scholarship",
+    "international students Korea",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: "gks for u. apply to the global korea scholarship with confidence.",
+    description: SITE_DESCRIPTION,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "gks for u",
+    description: SITE_DESCRIPTION,
+  },
+  robots: { index: true, follow: true },
 };
 
 const themeInitScript = `
